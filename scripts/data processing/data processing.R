@@ -4,6 +4,9 @@ library(readxl)
 data <- read_excel("raw_data/amr.xlsx")
 
 
+
+
+
 sum(is.na(data))
 data <- na.omit(data)
 sum(is.na(data))
@@ -15,15 +18,13 @@ colnames(AMR) <- paste0("Q", 1:28)
 
 
 
+
+
 # 1.Knowledge of antibotic
 antibiotic_knowledge <- AMR |> 
   select(Q1:Q12) |> 
   mutate(across(Q1:Q3, ~case_when(
-    knowledge_score <= 49 ~ "Poor", 
-    knowledge_score > 49 & knowledge_score < 80 ~ "Moderate",
-    knowledge_score >= 80 ~ "Good",
-    TRUE ~ NA_character_
-  ))  . == "Yes" ~ 1, 
+    . == "Yes" ~ 1, 
     . == "No" ~ 0, 
     . == "Don't know" ~ 0, 
     TRUE ~ NA_real_
@@ -52,16 +53,23 @@ antibiotic_knowledge <- AMR |>
     . == "Don't know" ~ 0, 
     TRUE ~ NA_real_
   ))) |> 
-  # Calculate row-wise mean for knowledge score
+ >= 80 ~ "Good",
+    TRUE ~ NA_character_
+  ))  # Calculate row-wise mean for knowledge score
   rowwise() |> 
   mutate(knowledge_score = mean(c_across(Q1:Q12) * 100, na.rm = TRUE)) |> 
   ungroup() |> 
   # Grading a person's knowledge level
   mutate(antibiotic_knowledge = case_when(
-  
+    knowledge_score <= 49 ~ "Poor", 
+    knowledge_score > 49 & knowledge_score < 80 ~ "Moderate",
+    knowledge_score
 
 
-# 2. knowledge 
+
+
+# 2. knowledge of attitude 
+
 attitude_knowledge <- AMR |> 
   select(Q13:Q22) |> 
   mutate(across(Q13:Q22, ~case_when(
@@ -109,6 +117,7 @@ practice_knowledge <- AMR |>
     . == "Yes" ~ 0, 
     TRUE ~ NA_real_
   ))) |> 
+  
   # Calculate row-wise mean for practice score
   rowwise() |> 
   mutate(practice_score = mean(c_across(Q23:Q28) * 100, na.rm = TRUE)) |> 
@@ -120,19 +129,29 @@ practice_knowledge <- AMR |>
     TRUE ~ NA_character_
   ))
 
+  
+  
+  
+  
 
-# combined the data 
+  # Grading a person's practice score
+  mutate(practice_knowledge = case_when(
+    practice_score <= 79 ~ "Misuse", 
+    practice_score >= 80 ~ "GOOD",
+    TRUE ~ NA_character_
+  ))
+
+
 
 
 demographics <- data |> 
   select(1:11)
 
+
 information_source <- data |> 
   select(41:49)
 
-#combine all sections
-clean_data <- cbind(demographics,antibiotic_knowledge, attitude_knowledge, 
-                    practice_knowledge,information_source)
+
 
 
 
