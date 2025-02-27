@@ -53,9 +53,8 @@ antibiotic_knowledge <- AMR |>
     . == "Don't know" ~ 0, 
     TRUE ~ NA_real_
   ))) |> 
- >= 80 ~ "Good",
-    TRUE ~ NA_character_
-  ))  # Calculate row-wise mean for knowledge score
+  
+  # Calculate row-wise mean for knowledge score
   rowwise() |> 
   mutate(knowledge_score = mean(c_across(Q1:Q12) * 100, na.rm = TRUE)) |> 
   ungroup() |> 
@@ -63,7 +62,11 @@ antibiotic_knowledge <- AMR |>
   mutate(antibiotic_knowledge = case_when(
     knowledge_score <= 49 ~ "Poor", 
     knowledge_score > 49 & knowledge_score < 80 ~ "Moderate",
-    knowledge_score
+    knowledge_score >= 80 ~ "Good",
+    TRUE ~ NA_character_
+  ))
+  
+  
 
 
 
@@ -91,6 +94,10 @@ attitude_knowledge <- AMR |>
 
 
 
+
+
+  
+
 #knowledge of practice
 
 practice_knowledge <- AMR |> 
@@ -117,7 +124,6 @@ practice_knowledge <- AMR |>
     . == "Yes" ~ 0, 
     TRUE ~ NA_real_
   ))) |> 
-  
   # Calculate row-wise mean for practice score
   rowwise() |> 
   mutate(practice_score = mean(c_across(Q23:Q28) * 100, na.rm = TRUE)) |> 
@@ -129,17 +135,6 @@ practice_knowledge <- AMR |>
     TRUE ~ NA_character_
   ))
 
-  
-  
-  
-  
-
-  # Grading a person's practice score
-  mutate(practice_knowledge = case_when(
-    practice_score <= 79 ~ "Misuse", 
-    practice_score >= 80 ~ "GOOD",
-    TRUE ~ NA_character_
-  ))
 
 
 
@@ -159,7 +154,9 @@ if (!dir.exists("clean_data")) {
   dir.create("clean_data")
 }
 
-
+#combine all sections
+clean_data <- cbind(demographics,antibiotic_knowledge, attitude_knowledge, 
+                    practice_knowledge,information_source)
 
 
 # export the data as CSV
